@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Text } from "vcc-ui";
 import { useCars } from "../hooks/useCars";
 import { CarCard } from "./CarCard";
@@ -6,36 +6,45 @@ import { CarCard } from "./CarCard";
 import styles from "../../public/css/home.module.css";
 import { Spacer } from "./Spacer";
 import PaginationDesktop from "./PaginationDesktop";
+import PaginationMobile from "./PaginationMobile";
 
 export const Home: React.FC = () => {
   const { cars } = useCars();
+  const [selected, setSelected] = useState(0);
 
-  const onClickLeft = () => {
+  const onClickNavigate = (left: boolean) => {
     let cardList = document.getElementById("card-list");
     let card = cardList?.firstElementChild;
     let cardSize = (card?.clientWidth ?? 0) + 24;
-    let scrollSize = cardList?.scrollWidth ?? 0;
     let scrollPosition = cardList?.scrollLeft ?? 0;
-    if (scrollPosition >= cardSize) {
-      cardList?.scrollTo({
-        left: scrollPosition - cardSize,
-        behavior: "smooth",
-      });
-    }
+
+    if (left) cardList?.scrollTo({ left: scrollPosition - cardSize });
+    else cardList?.scrollTo({ left: scrollPosition + cardSize });
   };
 
-  const onClickRight = () => {
+  const onClickMobile = (index: number) => {
     let cardList = document.getElementById("card-list");
     let card = cardList?.firstElementChild;
     let cardSize = (card?.clientWidth ?? 0) + 24;
-    let scrollSize = cardList?.scrollWidth ?? 0;
     let scrollPosition = cardList?.scrollLeft ?? 0;
-    if (scrollPosition + cardSize <= scrollSize) {
+    if (Math.abs(selected - index) > 1) {
       cardList?.scrollTo({
-        left: scrollPosition + cardSize,
+        left:
+          index > selected
+            ? scrollPosition + cardSize * (index - selected)
+            : scrollPosition - cardSize * (selected - index),
+        behavior: "smooth",
+      });
+    } else {
+      cardList?.scrollTo({
+        left:
+          index > selected
+            ? scrollPosition + cardSize
+            : scrollPosition - cardSize,
         behavior: "smooth",
       });
     }
+    setSelected(index);
   };
 
   return (
@@ -48,9 +57,14 @@ export const Home: React.FC = () => {
         ))}
       </div>
       <PaginationDesktop
-        onClickLeft={onClickLeft}
-        onClickRight={onClickRight}
+        onClickLeft={() => onClickNavigate(true)}
+        onClickRight={() => onClickNavigate(false)}
       ></PaginationDesktop>
+      <PaginationMobile
+        selected={selected}
+        onClick={onClickMobile}
+        total={cars.length}
+      ></PaginationMobile>
     </div>
   );
 };
