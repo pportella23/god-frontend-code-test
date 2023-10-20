@@ -6,3 +6,9 @@
   justify-content: flex-end;
   gap: 8px;
 }
+
+@media only screen and (max-width: 768px) {
+  .btnWrapper {
+    display: none;
+  }
+}
